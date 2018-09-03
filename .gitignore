@@ -64,5 +64,5 @@ typings/
 .next
 
 # ignore bat files in root
-!/*.bat
-
+!*.bat
+/*.bat
