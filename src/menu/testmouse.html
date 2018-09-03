@@ -1,0 +1,111 @@
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html onload="lines=0;">
+<head>
+<title>Browser Mouse Event Test Page</title>
+</head>
+<body>
+<H1>Mouse Event Test Page - Basic Version</H1>
+<table border=0 cellpadding=8>
+<tr>
+<td align=center valign="top"><a href="javascript:void(null)" class="page"
+    onmousedown="return logIt('mousedown  ',event)"
+    onmouseup="return logIt('mouseup    ',event)"
+    onclick="return logIt('click      ',event)"
+    oncontextmenu="return logIt('contextmenu',event)"
+    ondblclick="return logIt('dblclick   ',event)"
+	>click here to test</a> &nbsp;
+<img src="orhere.png"
+    onmousedown="return logIt('mousedown  ',event)"
+    onmouseup="return logIt('mouseup    ',event)"
+    onclick="return logIt('click      ',event)"
+    oncontextmenu="return logIt('contextmenu',event)"
+    ondblclick="return logIt('dblclick   ',event)"
+	><br>
+<a href="#"  class="page"
+    onClick="document.forms['testform'].elements[0].value ='';  lines=0; return false">click here to clear</a>
+
+<script type="text/javascript">
+var lines= 0;
+var maxlines= 24;
+
+function showmesg(t)
+{
+   var old= document.forms['testform'].elements[0].value;
+   if (lines >= maxlines)
+   {
+   	var i= old.indexOf('\n');
+	if (i >= 0)
+	    old= old.substr(i+1);
+   }
+   else
+   	lines++;
+
+   document.forms['testform'].elements[0].value= old + t + '\n';
+}
+
+function logIt(evt,e)
+{
+    showmesg(evt+" which="+e.which+" button="+e.button+' buttons='+e.buttons);
+    if (e.preventDefault)
+	e.preventDefault();
+    else
+	e.returnValue= false;
+     return false;
+}
+</script>
+
+<form name="testform">
+<textarea rows=25 cols=45></textarea></p>
+</tt>
+</form>
+</td><td valign=top>
+This page contains a script for testing the events fired in
+different browsers when a mouse click occurs.  Click on the
+"click here to test" link to see the events fired by the click.
+<p>
+This script will capture and log the following event types:
+<ul>
+<li> mousedown - the mouse button goes down.
+<li> mouseup - the mouse button goes up.
+<li> click - a logical mouse click.
+<li> dblclick - a logical mouse double click has occured.
+<li> contextmenu - a context menu has been triggered.
+</ul>
+We do not consider mouseover, mouseoff or mousemove events here.
+<p>
+Different browsers generate different events in different orders.
+For each event, the script will give the values of the <tt>event.which</tt>
+and <tt>event.button</tt> variables, which indicate which mouse button
+was clicked.
+<p>
+Try left clicks, right clicks, and middle clicks.
+Try double clicks.
+<p>
+Every attempt has been made to disable the default actions of mouse clicks
+when clicking on the test link.
+However, in some browsers, the defaults cannot be disabled, so various
+strange side effects may occur.
+<p>
+In a correctly working browser, only clicks on the link should be logged in
+the window, and default actions should still occur if the same mouse buttons
+are clicked on other parts of the screen.  Not all browsers work correctly.
+<p>
+This page sets up event handlers with the old Level 0 DOM.
+There are also versions of this page that use the
+standard
+<a href="testmouse-2.html">Level 2 addEventListener function</a>.
+or with the
+<a href="testmouse-ie.html">IE attachEvent</a> function.
+<p>
+See <a href="http://unixpapa.com/js/mouse.html">http://unixpapa.com/js/mouse.html</a>
+for a summary of results of tests of mouse events on different browsers.
+</td>
+</tr>
+</table>
+Your browser ID:<br><tt>
+<script>
+document.write(navigator.userAgent);
+</script>
+</body>
+</html>

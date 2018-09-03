@@ -1,0 +1,69 @@
+{
+  "name": "SharedPresence",
+  "version": "1.0.0",
+  "description": "Shared Presence is a universal web wrapper enabling Discord Rich Presence",
+  "main": "./src/main.js",
+  "scripts": {
+    "start": "electron ./src/main.js",
+    "dist": "build",
+    "postinstall": "./node_modules/.bin/electron-rebuild.cmd && electron-builder install-app-deps"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com:BrianPetkovsek/discord-crunchyroll.git"
+  },
+  "keywords": [
+    "discord",
+    "rich",
+    "presence",
+    "Shared Presence"
+  ],
+  "author": "BrianPetkovsek",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/BrianPetkovsek/discord-crunchyroll/issues"
+  },
+  "build": {
+    "appId": "com.sharedpresence.magic",
+    "win": {
+      "target": "nsis",
+      "icon": "./src/icon.ico"
+    },
+    "extraFiles": [
+      {
+        "from": "src",
+        "to": "src",
+        "filter": []
+      },
+      {
+        "from": "LICENSE",
+        "to": "LICENSE.SharedPresence.txt",
+        "filter": []
+      }
+    ]
+  },
+  "homepage": "https://github.com/BrianPetkovsek/discord-crunchyroll#readme",
+  "dependencies": {
+    "ajv": "^6.0.0",
+    "discord-rpc": "file:modules/discord-rpc",
+    "electron-context-menu": "^0.10.0",
+    "electron-navigation": "^1.5.8",
+    "electron-widevinecdm": "6.0.0",
+    "moment": "^2.22.2"
+  },
+  "devDependencies": {
+    "electron": "1.8.8",
+    "electron-builder": "^20.28.3",
+    "electron-rebuild": "^1.8.2",
+    "npm-platform-dependencies": "^0.1.0"
+  },
+  "darwinDependencies": {
+    "electron-widevinecdm": "^7.0.0"
+  },
+  "linuxDependencies": {
+    "electron-widevinecdm": "^7.0.0"
+  },
+  "win32Dependencies": {
+    "electron-widevinecdm": "6.0.0"
+  }
+}
