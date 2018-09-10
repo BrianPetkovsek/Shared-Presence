@@ -53,6 +53,7 @@ app.on('ready', () => {
 	login();
 });
 
+pastData = {};
 clientId = "485341906411454465";
 ipcEvent = null;
 ipcMain.on('getSenderEvent', (event, arg) => {  
@@ -62,6 +63,7 @@ ipcMain.on('getSenderEvent', (event, arg) => {
 		rpc = new Client({transport: 'ipc'});
 		login();
 	}
+	pastData = {};
 	console.log('getSenderEvent');
 	ipcEvent = event.sender;
 });
@@ -98,23 +100,35 @@ function resetInterval(){
 			}, timerTime);
 };
 
-pastData = {};
-ipcMain.on('retrieveData', (event, arg) => {  
+ipcMain.on('retrieveData', (event, data, filter=[]) => {  
 	console.log('retrieveData');
-	if (eqSet(arg,pastData)){
+	if (eqSet(data, pastData, filter)){
 		console.log('Data is the same not sending');
 	}else{
-		console.log(arg);
-		rpc.setActivity(arg);
-		pastData = arg
+		console.log(data);
+		rpc.setActivity(data);
+		pastData = data
 	}
 });
 
-function eqSet(as,bs){
-	if (Object.keys(as).length !== Object.keys(bs).length) return false;
+/*
+function removeAd(){
+	a = document.getElementById("movie_player");
+	z = document.getElementById("improved-toggle");
+	if (a.getAdState() == 1 && !a.getProgressState()['allowSeeking']) {
+		a.cueVideoById(a.getVideoData()['video_id']); 
+		a.playVideo();
+		a.setAutonav(z.active);
+	}
+}
+
+b = window.setInterval(removeAd,2500);
+*/
+function eqSet(as,bs,filter=[]){
+	if (Object.keys(as).length != Object.keys(bs).length) return false;
 	for (var key in as){
-		if (!bs.hasOwnProperty(key)) return false;
-		if (as[key] !== bs[key]) return false;
+		if (!filter.includes(key) && 
+			(!bs.hasOwnProperty(key) || as[key] != bs[key])) return false;
 	}
 	return true;
 }
@@ -126,15 +140,16 @@ app.on('window-all-closed', () => {
 
 //stops extra app instances from opening
 var shouldQuit = app.makeSingleInstance(function(commandLine, workingDirectory) {
-  // Someone tried to run a second instance, we should focus our window.
-  if (mainWindow) {
-    if (mainWindow.isMinimized()) mainWindow.restore();
-    mainWindow.focus();
-  }
+	// Someone tried to run a second instance, we should focus our window.
+	if (mainWindow) {
+		if (mainWindow.isMinimized()) mainWindow.restore();
+		mainWindow.focus();
+	}
 });
+
 if (shouldQuit) {
-  app.quit();
-  return;
+	app.quit();
+	return;
 }
 
 //only allows one electron window open (does not count electron-navigation tabs)

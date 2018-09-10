@@ -3,26 +3,32 @@ getEpochTime = function(){return Math.round((new Date()).getTime() / 1000)};
 
 clientId = '472976802206187520';
 
+
+hasSeeked = false;
 getInfos = function() {
 		windowName = null;
-		try{windowName   	 = document.title;}catch(err){}
-		videoDuration = null;
-		try{videoDuration    = document.querySelector('.ytp-time-duration').textContent;}catch(err){}
-        videoCurrentTime = null;
-		try{videoCurrentTime = document.querySelector('.ytp-time-current').textContent;}catch(err){}
-        creator = null;
-		try{creator 		 = document.querySelector('.yt-simple-endpoint.style-scope.yt-formatted-string').textContent;}catch(err){}
-		videoName = null;
-		try{videoName 		 = document.querySelector('.title.style-scope.ytd-video-primary-info-renderer').textContent;}catch(err){}
-		viewData = null;
-		try{viewData 		 = document.querySelector('.view-count.style-scope.yt-view-count-renderer').textContent;}catch(err){}
+		try{windowName = document.title;}catch(err){}
+		player = null;
+		try{player = document.getElementById("movie_player");}catch(err){}
+		videoDuration = player.getDuration();
+		videoCurrentTime = player.getCurrentTime();
+		videoData = player.getVideoData();
+		creator = videoData['author'];
+		videoName = videoData['title'];
+		isLive = videoData['isLive'];
+		playerVideo = player.getElementsByTagName('video')[0]
+		videoPaused = playerVideo.paused;
+		playerVideo.onseeking = function(){
+			global.hasSeeked = true;
+		};
 		return {
 			videoDuration: videoDuration,
 			videoCurrentTime: videoCurrentTime,
 			videoName: videoName,
-			title: windowName,
+			windowName: windowName,
 			creator: creator,
-			viewData: viewData
+			isLive: isLive,
+			videoPaused: videoPaused
 		}};
 
 		
@@ -35,11 +41,8 @@ function toSeconds(strArr){
 	}
 	return time;
 };
-		
-tempTime = -1;
-savedTimestap = -1;
-		
-async function injectRun(sender) {					
+
+async function injectRun(sender) {	
 	infos = await getInfos();
 	/*
 	{
@@ -49,40 +52,51 @@ async function injectRun(sender) {
 		largeImageText: 'Youtube',
 		smallImageKey,
 		smallImageText,
-		instance: false,
 		endTimestamp: endTime
 	}
 	*/
-	data = {largeImageKey: 'youtube_png', largeImageText: 'Youtube'}
+	rpcData = {largeImageKey: 'youtube_png', largeImageText: 'Youtube'}
+	console.log(infos);
 	if (infos) {
-		if (infos["videoName"] == infos['title'].replace(" - YouTube","")){
-			viewData = infos['viewData'].split(" ");
-			infos['live'] = viewData[1] != "views";
-			infos['views'] = viewData[0];
-			if (!infos['live']){
-				if (infos['videoCurrentTime'] != tempTime){
-					vidDur_dhms = infos['videoDuration'].split(':');
-					vidCurtime_dhms = infos['videoCurrentTime'].split(':');
-					tempTime = infos['videoCurrentTime']
-					vidDur = toSeconds(vidDur_dhms);
-					vidCurtime = toSeconds(vidCurtime_dhms);
+		let {isLive, creator, videoName, videoDuration, videoCurrentTime, videoPaused} = infos;
+		if (videoDuration && videoCurrentTime) {
+			if (!isLive){
+				if (!videoPaused){
+					vidDur = videoDuration;
+					vidCurtime = videoCurrentTime;
 					
 					a = getEpochTime()+(vidDur - vidCurtime);
-					data['endTimestamp'] = a;
-					savedTimestap = a;
+					rpcData.endTimestamp = a;
+					rpcData.state = 'By: '+ creator;
 				}else{
-					data['endTimestamp'] = savedTimestap;
+					videoName += ' By: '+ creator;
+					rpcData.state = 'paused';
+				}
+			}else{
+				videoName = "LIVE - " + videoName;
+				if (!videoPaused){
+					rpcData.state = 'By: '+ creator;
+				}else{
+					videoName += ' By: '+ creator;
+					rpcData.state = 'paused';
 				}
 			}
-			data['details'] = infos['videoName']
-			//data['state'] = 'by: '+ infos['creator']
+			rpcData.details = videoName;
+			
 		}else{
-			data['details'] = 'browsing'
-			data['state'] = 'idle'
+			rpcData.details = 'browsing';
+			rpcData.state = 'idle';
 		}
 	}
 	
-	sender('retrieveData', data);
+	if (global.hasSeeked){
+		//update with endTimestamp has seeked
+		global.hasSeeked = false;
+		sender('retrieveData', rpcData);
+	}else{
+		//ignore endTimestamp has not seeked
+		sender('retrieveData', rpcData, ['endTimestamp']);
+	}
 };
 
 module.exports.injectRun = injectRun;
